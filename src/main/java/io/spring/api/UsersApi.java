@@ -1,7 +1,5 @@
 package io.spring.api;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 import com.fasterxml.jackson.annotation.JsonRootName;
 import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.application.UserQueryService;
@@ -18,13 +16,16 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -36,37 +37,35 @@ public class UsersApi {
   private JwtService jwtService;
   private UserService userService;
 
-  @RequestMapping(path = "/users", method = POST)
-  public ResponseEntity createUser(@Valid @RequestBody RegisterParam registerParam) {
+  @PostMapping("/users")
+  public ResponseEntity<Map<String, Object>> createUser(@Valid @RequestBody RegisterParam registerParam) {
     User user = userService.createUser(registerParam);
     UserData userData = userQueryService.findById(user.getId()).get();
-    return ResponseEntity.status(201)
+    return ResponseEntity.status(HttpStatus.CREATED)
         .body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
   }
 
-  @RequestMapping(path = "/users/login", method = POST)
-  public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
+  @PostMapping("/users/login")
+  public ResponseEntity<Map<String, Object>> userLogin(@Valid @RequestBody LoginParam loginParam) {
     Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
     if (optional.isPresent()
         && passwordEncoder.matches(loginParam.getPassword(), optional.get().getPassword())) {
       UserData userData = userQueryService.findById(optional.get().getId()).get();
       return ResponseEntity.ok(
           userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
-    } else {
-      throw new InvalidAuthenticationException();
     }
+    throw new InvalidAuthenticationException();
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {
-    return new HashMap<String, Object>() {
-      {
-        put("user", userWithToken);
-      }
-    };
+    Map<String, Object> map = new HashMap<>();
+    map.put("user", userWithToken);
+    return map;
   }
 }
 
 @Getter
+@Setter
 @JsonRootName("user")
 @NoArgsConstructor
 class LoginParam {
@@ -75,5 +74,6 @@ class LoginParam {
   private String email;
 
   @NotBlank(message = "can't be empty")
+  @Size(min = 8, max = 128, message = "length must be 8-128")
   private String password;
 }
