@@ -34,16 +34,20 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest({ArticleApi.class})
-@Import({WebSecurityConfig.class, JacksonCustomizations.class})
+@WebMvcTest({ ArticleApi.class })
+@Import({ WebSecurityConfig.class, JacksonCustomizations.class })
 public class ArticleApiTest extends TestWithCurrentUser {
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
-  @MockBean private ArticleQueryService articleQueryService;
+  @MockBean
+  private ArticleQueryService articleQueryService;
 
-  @MockBean private ArticleRepository articleRepository;
+  @MockBean
+  private ArticleRepository articleRepository;
 
-  @MockBean ArticleCommandService articleCommandService;
+  @MockBean
+  ArticleCommandService articleCommandService;
 
   @Override
   @BeforeEach
@@ -56,14 +60,13 @@ public class ArticleApiTest extends TestWithCurrentUser {
   public void should_read_article_success() throws Exception {
     String slug = "test-new-article";
     DateTime time = new DateTime();
-    Article article =
-        new Article(
-            "Test New Article",
-            "Desc",
-            "Body",
-            Arrays.asList("java", "spring", "jpg"),
-            user.getId(),
-            time);
+    Article article = new Article(
+        "Test New Article",
+        "Desc",
+        "Body",
+        Arrays.asList("java", "spring", "jpg"),
+        user.getId(),
+        time);
     ArticleData articleData = TestHelper.getArticleDataFromArticleAndUser(article, user);
 
     when(articleQueryService.findBySlug(eq(slug), eq(null))).thenReturn(Optional.of(articleData));
@@ -80,25 +83,21 @@ public class ArticleApiTest extends TestWithCurrentUser {
   @Test
   public void should_404_if_article_not_found() throws Exception {
     when(articleQueryService.findBySlug(anyString(), any())).thenReturn(Optional.empty());
-    RestAssuredMockMvc.when().get("/articles/not-exists").then().statusCode(404);
+    RestAssuredMockMvc.when().get("/articles/not-exists").then().statusCode(404).body("errors.body[0]", equalTo("article not found"));
   }
 
   @Test
   public void should_update_article_content_success() throws Exception {
     List<String> tagList = Arrays.asList("java", "spring", "jpg");
 
-    Article originalArticle =
-        new Article("old title", "old description", "old body", tagList, user.getId());
+    Article originalArticle = new Article("old title", "old description", "old body", tagList, user.getId());
 
-    Article updatedArticle =
-        new Article("new title", "new description", "new body", tagList, user.getId());
+    Article updatedArticle = new Article("new title", "new description", "new body", tagList, user.getId());
 
-    Map<String, Object> updateParam =
-        prepareUpdateParam(
-            updatedArticle.getTitle(), updatedArticle.getBody(), updatedArticle.getDescription());
+    Map<String, Object> updateParam = prepareUpdateParam(
+        updatedArticle.getTitle(), updatedArticle.getBody(), updatedArticle.getDescription());
 
-    ArticleData updatedArticleData =
-        TestHelper.getArticleDataFromArticleAndUser(updatedArticle, user);
+    ArticleData updatedArticleData = TestHelper.getArticleDataFromArticleAndUser(updatedArticle, user);
 
     when(articleRepository.findBySlug(eq(originalArticle.getSlug())))
         .thenReturn(Optional.of(originalArticle));
@@ -127,29 +126,27 @@ public class ArticleApiTest extends TestWithCurrentUser {
 
     User anotherUser = new User("test@test.com", "test", "123123", "", "");
 
-    Article article =
-        new Article(
-            title, description, body, Arrays.asList("java", "spring", "jpg"), anotherUser.getId());
+    Article article = new Article(
+        title, description, body, Arrays.asList("java", "spring", "jpg"), anotherUser.getId());
 
     DateTime time = new DateTime();
-    ArticleData articleData =
-        new ArticleData(
-            article.getId(),
-            article.getSlug(),
-            article.getTitle(),
-            article.getDescription(),
-            article.getBody(),
-            false,
-            0,
-            time,
-            time,
-            Arrays.asList("joda"),
-            new ProfileData(
-                anotherUser.getId(),
-                anotherUser.getUsername(),
-                anotherUser.getBio(),
-                anotherUser.getImage(),
-                false));
+    ArticleData articleData = new ArticleData(
+        article.getId(),
+        article.getSlug(),
+        article.getTitle(),
+        article.getDescription(),
+        article.getBody(),
+        false,
+        0,
+        time,
+        time,
+        Arrays.asList("joda"),
+        new ProfileData(
+            anotherUser.getId(),
+            anotherUser.getUsername(),
+            anotherUser.getBio(),
+            anotherUser.getImage(),
+            false));
 
     when(articleRepository.findBySlug(eq(article.getSlug()))).thenReturn(Optional.of(article));
     when(articleQueryService.findBySlug(eq(article.getSlug()), eq(user)))
@@ -171,8 +168,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
     String body = "body";
     String description = "description";
 
-    Article article =
-        new Article(title, description, body, Arrays.asList("java", "spring", "jpg"), user.getId());
+    Article article = new Article(title, description, body, Arrays.asList("java", "spring", "jpg"), user.getId());
     when(articleRepository.findBySlug(eq(article.getSlug()))).thenReturn(Optional.of(article));
 
     given()
@@ -193,9 +189,8 @@ public class ArticleApiTest extends TestWithCurrentUser {
 
     User anotherUser = new User("test@test.com", "test", "123123", "", "");
 
-    Article article =
-        new Article(
-            title, description, body, Arrays.asList("java", "spring", "jpg"), anotherUser.getId());
+    Article article = new Article(
+        title, description, body, Arrays.asList("java", "spring", "jpg"), anotherUser.getId());
 
     when(articleRepository.findBySlug(eq(article.getSlug()))).thenReturn(Optional.of(article));
     given()
