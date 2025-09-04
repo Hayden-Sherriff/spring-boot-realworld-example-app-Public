@@ -17,7 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import org.springframework.validation.annotation.Validated;
 
+@Validated
 @RestController
 @RequestMapping(path = "/articles")
 @AllArgsConstructor
@@ -47,8 +51,8 @@ public class ArticlesApi {
 
   @GetMapping
   public ResponseEntity getArticles(
-      @RequestParam(value = "offset", defaultValue = "0") int offset,
-      @RequestParam(value = "limit", defaultValue = "20") int limit,
+	  @RequestParam(value = "offset", defaultValue = "0") @Min(0) int offset,
+	  @RequestParam(value = "limit", defaultValue = "20") @Min(1) @Max(50) int limit,
       @RequestParam(value = "tag", required = false) String tag,
       @RequestParam(value = "favorited", required = false) String favoritedBy,
       @RequestParam(value = "author", required = false) String author,
