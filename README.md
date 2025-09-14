@@ -25,7 +25,97 @@ The application uses Spring Boot (Web, Mybatis).
 * Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
 * Use [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
 
-And the code is organized as this:
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Client Layer                             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │   Web Frontend  │  │   Mobile App    │  │   API Client    │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         API Layer                               │
+│  ┌─────────────────┐                    ┌─────────────────┐     │
+│  │   REST API      │                    │   GraphQL API   │     │
+│  │   (Spring MVC)  │                    │   (DGS Framework)│     │
+│  └─────────────────┘                    └─────────────────┘     │
+│                                │                                │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │              Security Layer                             │    │
+│  │              (Spring Security + JWT)                   │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Application Layer                            │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │   Article       │  │      User       │  │    Comment      │  │
+│  │   Service       │  │    Service      │  │    Service      │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+│                                │                                │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                 CQRS Pattern                           │    │
+│  │         (Command/Query Separation)                     │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Core Domain Layer                          │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │    Article      │  │      User       │  │    Comment      │  │
+│  │    Entity       │  │     Entity      │  │    Entity       │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+│                                │                                │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │   Favorite      │  │      Tag        │  │   Follow        │  │
+│  │   Entity        │  │     Entity      │  │   Entity        │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   Infrastructure Layer                          │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                 Data Access Layer                      │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │    │
+│  │  │   MyBatis   │  │  Repository │  │   Mapper    │     │    │
+│  │  │   Config    │  │ Interfaces  │  │   Classes   │     │    │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘     │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Database Layer                             │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                   SQLite Database                      │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │    │
+│  │  │   Users     │  │  Articles   │  │  Comments   │     │    │
+│  │  │   Table     │  │   Table     │  │   Table     │     │    │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘     │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │    │
+│  │  │  Favorites  │  │    Tags     │  │   Follows   │     │    │
+│  │  │   Table     │  │   Table     │  │   Table     │     │    │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘     │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Architectural Patterns
+
+- **Domain Driven Design (DDD)**: Clear separation between business and infrastructure concerns
+- **CQRS (Command Query Responsibility Segregation)**: Separate read and write models  
+- **Data Mapper Pattern**: MyBatis implements data mapping between objects and database
+- **Layered Architecture**: Clear separation of concerns across layers
+
+## Code Organization
+
+The code is organized as this:
 
 1. `api` is the web layer implemented by Spring MVC
 2. `core` is the business model including entities and services
