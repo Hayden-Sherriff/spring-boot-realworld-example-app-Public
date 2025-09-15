@@ -25,7 +25,107 @@ The application uses Spring Boot (Web, Mybatis).
 * Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
 * Use [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
 
-And the code is organized as this:
+## Architecture
+
+The following diagram illustrates the overall architecture of the application:
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        WEB[Web Frontend]
+        MOBILE[Mobile App]
+        API_CLIENT[API Client]
+    end
+
+    subgraph "API Layer"
+        REST[REST API Controllers]
+        GRAPHQL[GraphQL DataFetchers]
+        SECURITY[Spring Security + JWT]
+    end
+
+    subgraph "Application Layer (CQRS)"
+        QUERY[Query Services]
+        COMMAND[Command Services]
+        DTO[Data Transfer Objects]
+    end
+
+    subgraph "Core Domain Layer"
+        ENTITIES[Domain Entities]
+        SERVICES[Domain Services]
+        REPOSITORIES[Repository Interfaces]
+    end
+
+    subgraph "Infrastructure Layer"
+        REPO_IMPL[Repository Implementations]
+        MYBATIS[MyBatis Mappers]
+        DB_CONFIG[Database Configuration]
+    end
+
+    subgraph "Database"
+        SQLITE[(SQLite Database)]
+    end
+
+    subgraph "External Services"
+        JWT_SERVICE[JWT Token Service]
+        VALIDATION[Bean Validation]
+    end
+
+    %% Client connections
+    WEB --> REST
+    WEB --> GRAPHQL
+    MOBILE --> REST
+    MOBILE --> GRAPHQL
+    API_CLIENT --> REST
+
+    %% API Layer connections
+    REST --> SECURITY
+    GRAPHQL --> SECURITY
+    SECURITY --> QUERY
+    SECURITY --> COMMAND
+
+    %% Application Layer connections
+    QUERY --> ENTITIES
+    COMMAND --> SERVICES
+    QUERY --> DTO
+    COMMAND --> DTO
+
+    %% Core Domain connections
+    SERVICES --> ENTITIES
+    SERVICES --> REPOSITORIES
+    ENTITIES --> REPOSITORIES
+
+    %% Infrastructure connections
+    REPOSITORIES --> REPO_IMPL
+    REPO_IMPL --> MYBATIS
+    MYBATIS --> DB_CONFIG
+    DB_CONFIG --> SQLITE
+
+    %% External service connections
+    SECURITY --> JWT_SERVICE
+    REST --> VALIDATION
+    GRAPHQL --> VALIDATION
+
+    %% Styling
+    classDef clientLayer fill:#e1f5fe
+    classDef apiLayer fill:#f3e5f5
+    classDef applicationLayer fill:#e8f5e8
+    classDef domainLayer fill:#fff3e0
+    classDef infrastructureLayer fill:#fce4ec
+    classDef database fill:#f1f8e9
+    classDef external fill:#f5f5f5
+
+    class WEB,MOBILE,API_CLIENT clientLayer
+    class REST,GRAPHQL,SECURITY apiLayer
+    class QUERY,COMMAND,DTO applicationLayer
+    class ENTITIES,SERVICES,REPOSITORIES domainLayer
+    class REPO_IMPL,MYBATIS,DB_CONFIG infrastructureLayer
+    class SQLITE database
+    class JWT_SERVICE,VALIDATION external
+```
+
+## Code Organization
+
+The code is organized as this:
 
 1. `api` is the web layer implemented by Spring MVC
 2. `core` is the business model including entities and services
