@@ -71,16 +71,6 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
     }
   }
 
-  @Override
-  public DataFetcherExceptionHandlerResult onException(
-      DataFetcherExceptionHandlerParameters handlerParameters) {
-    try {
-      return handleException(handlerParameters).get();
-    } catch (Exception e) {
-      throw new RuntimeException("Error handling exception", e);
-    }
-  }
-
   public static Error getErrorsAsData(ConstraintViolationException cve) {
     List<FieldErrorResource> errors = new ArrayList<>();
     for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
