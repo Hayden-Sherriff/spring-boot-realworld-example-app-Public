@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class JacksonCustomizations {
 
   @Bean
-  public Module realWorldModules() {
+  Module realWorldModules() {
     return new RealWorldModules();
   }
 
