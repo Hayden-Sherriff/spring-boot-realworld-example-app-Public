@@ -6,6 +6,7 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
+import io.spring.core.comment.Status;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
@@ -47,7 +48,7 @@ public class CommentQueryServiceTest extends DbTestBase {
 
   @Test
   public void should_read_comment_success() {
-    Comment comment = new Comment("content", user.getId(), "123");
+    Comment comment = new Comment("content", user.getId(), "123", Status.PUBLISHED.name());
     commentRepository.save(comment);
 
     Optional<CommentData> optional = commentQueryService.findById(comment.getId(), user);
@@ -65,9 +66,9 @@ public class CommentQueryServiceTest extends DbTestBase {
     userRepository.save(user2);
     userRepository.saveRelation(new FollowRelation(user.getId(), user2.getId()));
 
-    Comment comment1 = new Comment("content1", user.getId(), article.getId());
+    Comment comment1 = new Comment("content1", user.getId(), article.getId(), Status.PUBLISHED.name());
     commentRepository.save(comment1);
-    Comment comment2 = new Comment("content2", user2.getId(), article.getId());
+    Comment comment2 = new Comment("content2", user2.getId(), article.getId(), Status.PUBLISHED.name());
     commentRepository.save(comment2);
 
     List<CommentData> comments = commentQueryService.findByArticleId(article.getId(), user);

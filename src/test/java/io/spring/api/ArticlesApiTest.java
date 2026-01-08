@@ -3,8 +3,7 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static java.util.Arrays.asList;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,14 +11,15 @@ import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.ArticleQueryService;
+import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleData;
+import io.spring.application.data.ArticleDataList;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
+
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -170,4 +170,19 @@ public class ArticlesApiTest extends TestWithCurrentUser {
       }
     };
   }
+
+  @Test
+  public void should_get_trending_articles_as_authenticated_user() {
+    when(articleQueryService.trendingArticle(eq(user), any(Page.class)))
+            .thenReturn(any());
+
+    RestAssuredMockMvc
+            .given()
+            .header("Authorization", "Token " + token)
+            .when()
+            .get("/articles/trending?offset=0&limit=10")
+            .then()
+            .statusCode(200);
+  }
+
 }

@@ -4,9 +4,15 @@ import io.spring.application.ArticleQueryService;
 import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
+import io.spring.application.data.ArticleData;
 import io.spring.core.article.Article;
 import io.spring.core.user.User;
+
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +41,15 @@ public class ArticlesApi {
             put("article", articleQueryService.findById(article.getId(), user).get());
           }
         });
+  }
+
+  @GetMapping("/trending")
+  public ResponseEntity trendingArticle( @RequestParam(value = "offset", defaultValue = "0") int offset,
+                                                            @RequestParam(value = "limit", defaultValue = "20") int limit,
+                                                            @AuthenticationPrincipal User user) {
+
+    return  ResponseEntity.ok(articleQueryService.trendingArticle(user, new Page(offset, limit)));
+
   }
 
   @GetMapping(path = "feed")

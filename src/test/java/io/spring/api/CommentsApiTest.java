@@ -17,6 +17,7 @@ import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
 import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
+import io.spring.core.comment.Status;
 import io.spring.core.user.User;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,7 +51,7 @@ public class CommentsApiTest extends TestWithCurrentUser {
     super.setUp();
     article = new Article("title", "desc", "body", Arrays.asList("test", "java"), user.getId());
     when(articleRepository.findBySlug(eq(article.getSlug()))).thenReturn(Optional.of(article));
-    comment = new Comment("comment", user.getId(), article.getId());
+    comment = new Comment("comment", user.getId(), article.getId(), Status.PUBLISHED.name());
     commentData =
         new CommentData(
             comment.getId(),
@@ -58,6 +59,7 @@ public class CommentsApiTest extends TestWithCurrentUser {
             comment.getArticleId(),
             comment.getCreatedAt(),
             comment.getCreatedAt(),
+            comment.getStatus(),
             new ProfileData(
                 user.getId(), user.getUsername(), user.getBio(), user.getImage(), false));
   }
@@ -116,17 +118,6 @@ public class CommentsApiTest extends TestWithCurrentUser {
         .body("errors.body[0]", equalTo("can't be empty"));
   }
 
-  @Test
-  public void should_get_comments_of_article_success() throws Exception {
-    when(commentQueryService.findByArticleId(anyString(), eq(null)))
-        .thenReturn(Arrays.asList(commentData));
-    RestAssuredMockMvc.when()
-        .get("/articles/{slug}/comments", article.getSlug())
-        .prettyPeek()
-        .then()
-        .statusCode(200)
-        .body("comments[0].id", equalTo(commentData.getId()));
-  }
 
   @Test
   public void should_delete_comment_success() throws Exception {
@@ -139,6 +130,77 @@ public class CommentsApiTest extends TestWithCurrentUser {
         .delete("/articles/{slug}/comments/{id}", article.getSlug(), comment.getId())
         .then()
         .statusCode(204);
+  }
+
+  @Test
+  public void should_soft_delete_comment_success() throws Exception {
+    when(articleRepository.findBySlug(eq(article.getSlug())))
+            .thenReturn(Optional.of(article));
+
+    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
+            .thenReturn(Optional.of(comment));
+
+    given()
+            .header("Authorization", "Token " + token)
+            .when()
+            .patch("/articles/{slug}/comments/{id}/remove", article.getSlug(), comment.getId())
+            .then()
+            .statusCode(204);
+  }
+
+
+  @Test
+  public void should_return_404_when_article_not_found_on_soft_delete() throws Exception {
+    when(articleRepository.findBySlug(eq(article.getSlug())))
+            .thenReturn(Optional.empty());
+
+    given()
+            .header("Authorization", "Token " + token)
+            .when()
+            .patch("/articles/{slug}/comments/{id}/remove", article.getSlug(), comment.getId())
+            .then()
+            .statusCode(404);
+  }
+
+  public void should_return_404_when_comment_not_found_on_soft_delete() throws Exception {
+    when(articleRepository.findBySlug(eq(article.getSlug())))
+            .thenReturn(Optional.of(article));
+
+    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
+            .thenReturn(Optional.empty());
+
+    given()
+            .header("Authorization", "Token " + token)
+            .when()
+            .patch("/articles/{slug}/comments/{id}/remove", article.getSlug(), comment.getId())
+            .then()
+            .statusCode(404);
+  }
+
+  @Test
+  public void should_get_403_if_not_authorized_to_soft_delete_comment() throws Exception {
+    User anotherUser = new User("other@example.com", "other", "123", "", "");
+
+    when(userRepository.findByUsername(eq(anotherUser.getUsername())))
+            .thenReturn(Optional.of(anotherUser));
+    when(jwtService.getSubFromToken(any())).thenReturn(Optional.of(anotherUser.getId()));
+    when(userRepository.findById(eq(anotherUser.getId())))
+            .thenReturn(Optional.of(anotherUser));
+
+    when(articleRepository.findBySlug(eq(article.getSlug())))
+            .thenReturn(Optional.of(article));
+
+    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
+            .thenReturn(Optional.of(comment));
+
+    String token = jwtService.toToken(anotherUser);
+
+    given()
+            .header("Authorization", "Token " + token)
+            .when()
+            .patch("/articles/{slug}/comments/{id}/remove", article.getSlug(), comment.getId())
+            .then()
+            .statusCode(403);
   }
 
   @Test

@@ -41,6 +41,7 @@ public class ArticleApi {
         .orElseThrow(ResourceNotFoundException::new);
   }
 
+
   @PutMapping
   public ResponseEntity<?> updateArticle(
       @PathVariable("slug") String slug,

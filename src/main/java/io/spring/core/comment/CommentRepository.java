@@ -7,5 +7,10 @@ public interface CommentRepository {
 
   Optional<Comment> findById(String articleId, String id);
 
+ void updateStatus(Comment comment);
+
   void remove(Comment comment);
+
+
+
 }

@@ -9,13 +9,10 @@ import io.spring.core.user.User;
 import io.spring.infrastructure.mybatis.readservice.ArticleFavoritesReadService;
 import io.spring.infrastructure.mybatis.readservice.ArticleReadService;
 import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryService;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
@@ -37,6 +34,12 @@ public class ArticleQueryService {
       }
       return Optional.of(articleData);
     }
+  }
+
+  public ArticleDataList trendingArticle(User user, Page page) {
+    List<ArticleData> articleData = articleReadService.findAllOrderByFavorites(page);
+    fillExtraInfo(articleData, user);
+    return new ArticleDataList( articleData, articleData.size());
   }
 
   public Optional<ArticleData> findBySlug(String slug, User user) {

@@ -28,6 +28,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
+import static io.restassured.module.mockmvc.RestAssuredMockMvc.when;
+import static org.codehaus.groovy.runtime.DefaultGroovyMethods.any;
+
 @Import({
   ArticleQueryService.class,
   MyBatisUserRepository.class,
@@ -227,4 +230,5 @@ public class ArticleQueryServiceTest extends DbTestBase {
     ArticleData articleData = anotherUserFeed.getArticleDatas().get(0);
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
   }
-}
+
+  }
