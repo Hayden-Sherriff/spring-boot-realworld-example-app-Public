@@ -20,7 +20,6 @@ import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Assertions;

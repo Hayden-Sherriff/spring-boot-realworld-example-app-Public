@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Param;
 public interface ArticleReadService {
   ArticleData findById(@Param("id") String id);
 
-  List<ArticleData> findAll(@Param("page") Page page);
+  List<ArticleData> findAllOrderByFavorites(@Param("page") Page page);
 
   ArticleData findBySlug(@Param("slug") String slug);
 

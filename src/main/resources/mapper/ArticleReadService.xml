@@ -35,12 +35,38 @@
         left join users AU on AU.id = A.user_id
         left join users AFU on AFU.id = AF.user_id
     </sql>
+    <sql id="favoriteCountSubquery">
+        select
+        AF.article_id,
+        count(*) as favoritesCount
+        from article_favorites AF
+        group by AF.article_id
+    </sql>
     <select id="findById" resultMap="transfer.data.articleData">
         <include refid="selectArticleData"/>
     </select>
 
-    <select id="findAll" resultMap="transfer.data.articleData">
-        <include refid="selectArticleData"/>
+    <select id="findAllOrderByFavorites"
+            resultMap="transfer.data.articleData">
+        select
+        A.id articleId,
+        A.slug articleSlug,
+        A.title articleTitle,
+        A.description articleDescription,
+        A.body articleBody,
+        A.created_at articleCreatedAt,
+        A.updated_at articleUpdatedAt,
+        T.name tagName,
+        <include refid="profileColumns"/>,
+        COALESCE(FC.favoritesCount, 0) as favoritesCount
+        from articles A
+        left join article_tags AT on A.id = AT.article_id
+        left join tags T on T.id = AT.tag_id
+        left join users U on U.id = A.user_id
+        left join (
+        <include refid="favoriteCountSubquery"/>
+        ) FC on FC.article_id = A.id
+        order by favoritesCount desc, A.created_at desc
         limit #{page.offset}, #{page.limit}
     </select>
 

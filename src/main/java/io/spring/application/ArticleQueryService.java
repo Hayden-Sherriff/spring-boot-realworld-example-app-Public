@@ -37,10 +37,9 @@ public class ArticleQueryService {
   }
 
   public ArticleDataList trendingArticle(User user, Page page) {
-    List<ArticleData> articleData = articleReadService.findAll(page);
-    return new ArticleDataList( articleData.stream()
-            .sorted(Comparator.comparing(ArticleData::getFavoritesCount, Comparator.reverseOrder()))
-            .collect(Collectors.toList()), articleData.size());
+    List<ArticleData> articleData = articleReadService.findAllOrderByFavorites(page);
+    fillExtraInfo(articleData, user);
+    return new ArticleDataList( articleData, articleData.size());
   }
 
   public Optional<ArticleData> findBySlug(String slug, User user) {
