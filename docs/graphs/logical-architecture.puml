@@ -1,0 +1,76 @@
+@startuml
+!pragma layout smetana
+
+left to right direction
+skinparam linetype ortho
+
+package "Controllers" {
+  class "io.spring.api.ArticleApi" as ArticleApi
+  class "io.spring.api.ArticleFavoriteApi" as ArticleFavoriteApi
+  class "io.spring.api.UsersApi" as UsersApi
+  class "io.spring.api.ArticlesApi" as ArticlesApi
+  class "io.spring.api.CommentsApi" as CommentsApi
+  class "io.spring.api.CurrentUserApi" as CurrentUserApi
+  class "io.spring.api.ProfileApi" as ProfileApi
+  class "io.spring.api.TagsApi" as TagsApi
+}
+
+package "Service Implementations" {
+  class ArticleCommandService_impl as "io.spring.application.article.ArticleCommandService"
+  class ArticleQueryService_impl   as "io.spring.application.ArticleQueryService"
+}
+
+package "Service Interfaces" {
+  interface ArticleCommandService_iface as "io.spring.application.article.ArticleCommandService"
+  interface ArticleQueryService_iface   as "io.spring.application.ArticleQueryService"
+  interface UserService_iface           as "io.spring.application.user.UserService"
+  interface UserQueryService_iface      as "io.spring.application.UserQueryService"
+}
+
+' Controllers -> Service interfaces (only when evidenced)
+ArticleApi         --> ArticleQueryService_iface : uses
+ArticleApi         --> ArticleCommandService_iface : uses
+ArticleFavoriteApi --> ArticleQueryService_iface : uses
+UsersApi           --> UserService_iface : uses
+UsersApi           --> UserQueryService_iface : uses
+
+' Service implementations implement interfaces (dashed)
+ArticleCommandService_impl ..|> ArticleCommandService_iface : implements
+ArticleQueryService_impl   ..|> ArticleQueryService_iface   : implements
+
+package "Repositories" {
+  interface "io.spring.core.article.ArticleRepository"        as ArticleRepository
+  interface "io.spring.core.favorite.ArticleFavoriteRepository" as ArticleFavoriteRepository
+  interface "io.spring.core.comment.CommentRepository"        as CommentRepository
+  interface "io.spring.core.user.UserRepository"              as UserRepository
+
+  ' Representative concrete repository implementation (evidenced)
+  class "io.spring.infrastructure.repository.MyBatisArticleRepository" as MyBatisArticleRepository
+}
+
+package "Domain Entities" {
+  class "io.spring.core.article.Article"       as Article
+  class "io.spring.core.comment.Comment"       as Comment
+  class "io.spring.core.favorite.ArticleFavorite" as ArticleFavorite
+  class "io.spring.core.user.User"             as User
+}
+
+' Repositories manage domain entities
+ArticleRepository        --> Article         : manages
+CommentRepository        --> Comment         : manages
+ArticleFavoriteRepository --> ArticleFavorite : manages
+UserRepository           --> User            : manages
+
+package "Mappers" {
+  interface "io.spring.infrastructure.mybatis.mapper.ArticleMapper"         as ArticleMapper
+  interface "io.spring.infrastructure.mybatis.mapper.ArticleFavoriteMapper" as ArticleFavoriteMapper
+  interface "io.spring.infrastructure.mybatis.mapper.CommentMapper"         as CommentMapper
+  interface "io.spring.infrastructure.mybatis.mapper.UserMapper"            as UserMapper
+}
+
+' Configuration / Security (no arrows)
+package "Configuration" {
+  class "io.spring.api.security.WebSecurityConfig" as WebSecurityConfig
+}
+
+@enduml

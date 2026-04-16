@@ -1,0 +1,62 @@
+@startuml
+!pragma layout smetana
+
+top to bottom direction
+
+actor "Authenticated user" as AuthUser
+actor "System" as System
+
+rectangle "Articles" {
+  usecase "Get Article\n(GET /articles/{slug})" as UC_GetArticle
+  usecase "Update Article\n(PUT /articles/{slug})" as UC_UpdateArticle
+  usecase "Delete Article\n(DELETE /articles/{slug})" as UC_DeleteArticle
+  usecase "Create Article\n(POST /articles)" as UC_CreateArticle
+  usecase "Get Articles\n(GET /articles)" as UC_GetArticles
+  usecase "Get Feed\n(GET /articles/feed)" as UC_GetFeed
+  usecase "Favorite Article\n(POST /articles/{slug}/favorite)" as UC_FavoriteArticle
+  usecase "Unfavorite Article\n(DELETE /articles/{slug}/favorite)" as UC_UnfavoriteArticle
+}
+
+rectangle "Comments" {
+  usecase "Create Comment\n(POST /articles/{slug}/comments)" as UC_CreateComment
+  usecase "Get Comments\n(GET /articles/{slug}/comments)" as UC_GetComments
+  usecase "Delete Comment\n(DELETE /articles/{slug}/comments/{id})" as UC_DeleteComment
+}
+
+rectangle "User Account" {
+  usecase "Get Current User\n(GET /user)" as UC_GetCurrentUser
+  usecase "Update Current User\n(PUT /user)" as UC_UpdateCurrentUser
+}
+
+rectangle "Profiles" {
+  usecase "Get Profile\n(GET /profiles/{username})" as UC_GetProfile
+  usecase "Follow User\n(POST /profiles/{username}/follow)" as UC_FollowUser
+  usecase "Unfollow User\n(DELETE /profiles/{username}/follow)" as UC_UnfollowUser
+}
+
+rectangle "Tags" {
+  usecase "Get Tags\n(GET /tags)" as UC_GetTags
+}
+
+' Associations: authenticated actions
+AuthUser -- UC_UpdateArticle
+AuthUser -- UC_DeleteArticle
+AuthUser -- UC_CreateArticle
+AuthUser -- UC_GetFeed
+AuthUser -- UC_FavoriteArticle
+AuthUser -- UC_UnfavoriteArticle
+AuthUser -- UC_CreateComment
+AuthUser -- UC_DeleteComment
+AuthUser -- UC_GetCurrentUser
+AuthUser -- UC_UpdateCurrentUser
+AuthUser -- UC_FollowUser
+AuthUser -- UC_UnfollowUser
+
+' Public / system-accessible actions
+System -- UC_GetArticle
+System -- UC_GetArticles
+System -- UC_GetComments
+System -- UC_GetProfile
+System -- UC_GetTags
+
+@enduml
