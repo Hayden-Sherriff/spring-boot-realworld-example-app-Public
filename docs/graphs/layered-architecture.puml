@@ -1,0 +1,46 @@
+@startuml
+!pragma layout smetana
+
+left to right direction
+skinparam linetype ortho
+
+package "Presentation" {
+  class ArticleApi <<RestController>>
+  class ArticleFavoriteApi <<RestController>>
+  class UsersApi <<RestController>>
+}
+
+package "Service" {
+  class ArticleQueryService <<Service>>
+  class ArticleCommandService <<Service>>
+  class UserService <<Service>>
+}
+
+package "Domain" {
+  class Article <<Domain Model>>
+  class User <<Domain Model>>
+  class ArticleData <<DTO>>
+  class UserData <<DTO>>
+  class UserWithToken <<DTO>>
+}
+
+package "Persistence" {
+  class ArticleRepository <<Repository>>
+  class UserRepository <<Repository>>
+  class MyBatisArticleRepository <<Repository Impl>>
+  class MyBatisArticleFavoriteRepository <<Repository Impl>>
+  class ArticleMapper <<MyBatis @Mapper>>
+}
+
+package "Integration" {
+  ' No external integration components detected (intentionally left empty)
+}
+
+package "Security / Configuration" {
+  class WebSecurityConfig <<Configuration>>
+  class JwtTokenFilter <<Security Filter>>
+  class JacksonCustomizations <<Configuration>>
+  class MyBatisConfig <<Configuration>>
+}
+
+@enduml
