@@ -1,81 +1,95 @@
-# ![RealWorld Example App using Kotlin and Spring](example-logo.png)
+# RealWorld Example App using Java and Spring Boot
 
 [![Actions](https://github.com/gothinkster/spring-boot-realworld-example-app/workflows/Java%20CI/badge.svg)](https://github.com/gothinkster/spring-boot-realworld-example-app/actions)
+![Java](https://img.shields.io/badge/Java-17%2B-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=spring-boot&logoColor=white)
+![MyBatis](https://img.shields.io/badge/MyBatis-ORM-red)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-> ### Spring boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
+> ### Spring Boot + MyBatis codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld-example-apps) spec and API.
 
-This codebase was created to demonstrate a fully fledged full-stack application built with Spring boot + Mybatis including CRUD operations, authentication, routing, pagination, and more.
+This codebase was created to demonstrate a fully fledged full-stack application built with Spring Boot + MyBatis including CRUD operations, authentication, routing, pagination, and more.
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+For more information on how this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
 
-# *NEW* GraphQL Support  
+# *NEW* GraphQL Support
 
-Following some DDD principles. REST or GraphQL is just a kind of adapter. And the domain layer will be consistent all the time. So this repository implement GraphQL and REST at the same time.
+Following some DDD principles. REST or GraphQL is just a kind of adapter. And the domain layer will be consistent all the time. So this repository implements GraphQL and REST at the same time.
 
-The GraphQL schema is https://github.com/gothinkster/spring-boot-realworld-example-app/blob/master/src/main/resources/schema/schema.graphqls and the visualization looks like below.
+The GraphQL schema is <https://github.com/gothinkster/spring-boot-realworld-example-app/blob/master/src/main/resources/schema/schema.graphqls> and the visualization looks like below.
 
-![](graphql-schema.png)
+[![](https://github.com/gothinkster/spring-boot-realworld-example-app/raw/master/graphql-schema.png)](https://github.com/gothinkster/spring-boot-realworld-example-app/blob/master/graphql-schema.png)
 
-And this implementation is using [dgs-framework](https://github.com/Netflix/dgs-framework) which is a quite new java graphql server framework.
+This implementation uses [dgs-framework](https://github.com/Netflix/dgs-framework), a Netflix open-source Java GraphQL server framework.
+
 # How it works
 
-The application uses Spring Boot (Web, Mybatis).
+The application uses Spring Boot (Web, MyBatis).
 
-* Use the idea of Domain Driven Design to separate the business term and infrastructure term.
-* Use MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
-* Use [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
+- Uses Domain Driven Design to separate the business term and infrastructure term.
+- Uses MyBatis to implement the [Data Mapper](https://martinfowler.com/eaaCatalog/dataMapper.html) pattern for persistence.
+- Uses [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern to separate the read model and write model.
 
-And the code is organized as this:
+Code is organized as follows:
 
-1. `api` is the web layer implemented by Spring MVC
-2. `core` is the business model including entities and services
-3. `application` is the high-level services for querying the data transfer objects
-4. `infrastructure`  contains all the implementation classes as the technique details
+1. `api` — web layer implemented by Spring MVC
+2. `core` — business model including entities and services
+3. `application` — high-level services for querying data transfer objects
+4. `infrastructure` — all implementation classes as technical details
 
 # Security
 
-Integration with Spring Security and add other filter for jwt token process.
+Integrates with Spring Security and adds a custom filter for JWT token processing.
 
 The secret key is stored in `application.properties`.
 
 # Database
 
-It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without losing test data after every restart), can be changed easily in the `application.properties` for any other database.
+Uses a ~~H2 in-memory database~~ SQLite database (for easy local testing without losing data after every restart). Can be changed to any other database via `application.properties`.
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need **Java 17 or higher** installed (Java 21 LTS recommended).
 
-    ./gradlew bootRun
+```bash
+./gradlew bootRun
+```
 
-To test that it works, open a browser tab at http://localhost:8080/tags .  
-Alternatively, you can run
+To verify it works, open a browser tab at <http://localhost:8080/tags> or run:
 
-    curl http://localhost:8080/tags
+```bash
+curl http://localhost:8080/tags
+```
 
 # Try it out with [Docker](https://www.docker.com/)
 
 You'll need Docker installed.
-	
-    ./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
-    docker run -p 8081:8080 spring-boot-realworld-example-app
+
+```bash
+./gradlew bootBuildImage --imageName spring-boot-realworld-example-app
+docker run -p 8081:8080 spring-boot-realworld-example-app
+```
 
 # Try it out with a RealWorld frontend
 
-The entry point address of the backend API is at http://localhost:8080, **not** http://localhost:8080/api as some of the frontend documentation suggests.
+The backend API entry point is at <http://localhost:8080>, **not** <http://localhost:8080/api> as some frontend documentation suggests.
 
-# Run test
+# Run tests
 
-The repository contains a lot of test cases to cover both api test and repository test.
+The repository contains test cases covering both API tests and repository tests.
 
-    ./gradlew test
+```bash
+./gradlew test
+```
 
 # Code format
 
-Use spotless for code format.
+Uses [Spotless](https://github.com/diffplug/spotless) for code formatting.
 
-    ./gradlew spotlessJavaApply
+```bash
+./gradlew spotlessJavaApply
+```
 
-# Help
+# Contributing
 
-Please fork and PR to improve the project.
+Please fork the repository and open a pull request to improve the project. Contributions of all kinds are welcome — bug fixes, documentation improvements, and new features.
