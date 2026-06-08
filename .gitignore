@@ -24,3 +24,12 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+
+### Logs ###
+*.log
+
+### VSCode ###
+.VSCode
+
+### Spec ###
+.spec/
