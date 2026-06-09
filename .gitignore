@@ -10,6 +10,7 @@
 .project
 .settings
 .springBeans
+.env
 
 ### IntelliJ IDEA ###
 .idea
