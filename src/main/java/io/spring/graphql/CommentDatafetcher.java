@@ -20,10 +20,10 @@ import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
 import io.spring.graphql.types.PageInfo;
-import java.util.HashMap;
-import java.util.Map;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 
@@ -107,8 +107,7 @@ public class CommentDatafetcher {
     return PageInfo.newBuilder()
         .startCursor(
             comments.getStartCursor() == null ? null : comments.getStartCursor().toString())
-        .endCursor(
-            comments.getEndCursor() == null ? null : comments.getEndCursor().toString())
+        .endCursor(comments.getEndCursor() == null ? null : comments.getEndCursor().toString())
         .hasPreviousPage(comments.hasPrevious())
         .hasNextPage(comments.hasNext())
         .build();
