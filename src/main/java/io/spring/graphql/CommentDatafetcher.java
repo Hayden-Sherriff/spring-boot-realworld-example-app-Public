@@ -13,6 +13,7 @@ import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.DateTimeCursor;
+import io.spring.application.PageCursor;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.CommentData;
 import io.spring.core.user.User;
@@ -100,13 +101,11 @@ public class CommentDatafetcher {
   }
 
   private DefaultPageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
+    PageCursor startCursor = comments.getStartCursor();
+    PageCursor endCursor = comments.getEndCursor();
     return new DefaultPageInfo(
-        comments.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getStartCursor().toString()),
-        comments.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getEndCursor().toString()),
+        startCursor == null ? null : new DefaultConnectionCursor(startCursor.toString()),
+        endCursor == null ? null : new DefaultConnectionCursor(endCursor.toString()),
         comments.hasPrevious(),
         comments.hasNext());
   }
