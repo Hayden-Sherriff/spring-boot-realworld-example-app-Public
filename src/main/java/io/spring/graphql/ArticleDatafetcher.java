@@ -16,6 +16,7 @@ import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.DateTimeCursor;
+import io.spring.application.PageCursor;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.CommentData;
 import io.spring.core.user.User;
@@ -357,13 +358,11 @@ public class ArticleDatafetcher {
   }
 
   private DefaultPageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
+    PageCursor startCursor = articles.getStartCursor();
+    PageCursor endCursor = articles.getEndCursor();
     return new DefaultPageInfo(
-        articles.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getStartCursor().toString()),
-        articles.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getEndCursor().toString()),
+        startCursor == null ? null : new DefaultConnectionCursor(startCursor.toString()),
+        endCursor == null ? null : new DefaultConnectionCursor(endCursor.toString()),
         articles.hasPrevious(),
         articles.hasNext());
   }
