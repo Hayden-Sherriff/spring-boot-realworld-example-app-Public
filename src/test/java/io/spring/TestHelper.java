@@ -1,16 +1,17 @@
 package io.spring;
 
+import io.spring.application.DateTimes;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
 import io.spring.core.user.User;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.joda.time.DateTime;
 
 public class TestHelper {
   public static ArticleData articleDataFixture(String seed, User user) {
-    DateTime now = new DateTime();
+    OffsetDateTime now = DateTimes.now();
     return new ArticleData(
         seed + "id",
         "title-" + seed,
