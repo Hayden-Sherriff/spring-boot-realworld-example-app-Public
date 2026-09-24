@@ -5,6 +5,7 @@ import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.DateTimeCursor;
+import io.spring.application.DateTimes;
 import io.spring.application.Page;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
@@ -19,9 +20,9 @@ import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.repository.MyBatisArticleFavoriteRepository;
 import io.spring.infrastructure.repository.MyBatisArticleRepository;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Optional;
-import org.joda.time.DateTime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ public class ArticleQueryServiceTest extends DbTestBase {
     userRepository.save(user);
     article =
         new Article(
-            "test", "desc", "body", Arrays.asList("java", "spring"), user.getId(), new DateTime());
+            "test", "desc", "body", Arrays.asList("java", "spring"), user.getId(), DateTimes.now());
     articleRepository.save(article);
   }
 
@@ -92,7 +93,7 @@ public class ArticleQueryServiceTest extends DbTestBase {
             "body",
             Arrays.asList("test"),
             user.getId(),
-            new DateTime().minusHours(1));
+            DateTimes.now().minusHours(1));
     articleRepository.save(anotherArticle);
 
     ArticleDataList recentArticles =
@@ -116,7 +117,7 @@ public class ArticleQueryServiceTest extends DbTestBase {
             "body",
             Arrays.asList("test"),
             user.getId(),
-            new DateTime().minusHours(1));
+            DateTimes.now().minusHours(1));
     articleRepository.save(anotherArticle);
 
     CursorPager<ArticleData> recentArticles =
@@ -130,7 +131,7 @@ public class ArticleQueryServiceTest extends DbTestBase {
             null,
             null,
             null,
-            new CursorPageParameter<DateTime>(
+            new CursorPageParameter<OffsetDateTime>(
                 DateTimeCursor.parse(recentArticles.getEndCursor().toString()), 20, Direction.NEXT),
             user);
     Assertions.assertEquals(nodata.getData().size(), 0);
