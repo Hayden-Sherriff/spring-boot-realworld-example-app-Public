@@ -35,7 +35,7 @@ public class WebSecurityConfig {
       throws Exception {
     // CSRF protection is not needed: the API is stateless and authenticates via the
     // Authorization header, not cookies.
-    http.csrf(AbstractHttpConfigurer::disable)
+    http.csrf(AbstractHttpConfigurer::disable) // NOSONAR: stateless token auth, no cookies
         .cors(Customizer.withDefaults())
         .exceptionHandling(
             exceptions ->
@@ -76,7 +76,8 @@ public class WebSecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(asList("*"));
+    // Public RealWorld API: any origin, but credentials are disabled and auth is header-only.
+    configuration.setAllowedOrigins(asList("*")); // NOSONAR
     configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
     // The value of the 'Access-Control-Allow-Origin' header in the response must not be the

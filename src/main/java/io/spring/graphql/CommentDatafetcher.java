@@ -100,13 +100,11 @@ public class CommentDatafetcher {
   }
 
   private DefaultPageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
+    var startCursor = comments.getStartCursor();
+    var endCursor = comments.getEndCursor();
     return new DefaultPageInfo(
-        comments.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getStartCursor().toString()),
-        comments.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getEndCursor().toString()),
+        startCursor == null ? null : new DefaultConnectionCursor(startCursor.toString()),
+        endCursor == null ? null : new DefaultConnectionCursor(endCursor.toString()),
         comments.hasPrevious(),
         comments.hasNext());
   }

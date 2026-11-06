@@ -357,13 +357,11 @@ public class ArticleDatafetcher {
   }
 
   private DefaultPageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
+    var startCursor = articles.getStartCursor();
+    var endCursor = articles.getEndCursor();
     return new DefaultPageInfo(
-        articles.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getStartCursor().toString()),
-        articles.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(articles.getEndCursor().toString()),
+        startCursor == null ? null : new DefaultConnectionCursor(startCursor.toString()),
+        endCursor == null ? null : new DefaultConnectionCursor(endCursor.toString()),
         articles.hasPrevious(),
         articles.hasNext());
   }

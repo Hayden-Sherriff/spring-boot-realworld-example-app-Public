@@ -17,9 +17,9 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 public class UserService {
-  private UserRepository userRepository;
-  private String defaultImage;
-  private PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final String defaultImage;
+  private final PasswordEncoder passwordEncoder;
 
   @Autowired
   public UserService(

@@ -59,6 +59,7 @@ public class SpringSecurityJwtServiceTest {
 
   @Test
   public void should_reject_short_secret() {
-    Assertions.assertThrows(IllegalStateException.class, () -> new JwtConfig().jwtEncoder("short"));
+    JwtConfig jwtConfig = new JwtConfig();
+    Assertions.assertThrows(IllegalStateException.class, () -> jwtConfig.jwtEncoder("short"));
   }
 }
