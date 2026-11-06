@@ -34,9 +34,11 @@ And the code is organized as this:
 
 # Security
 
-Integration with Spring Security and add other filter for jwt token process.
+Authentication uses Spring Security's OAuth2 resource server support: requests carry a JWT in the `Authorization` header (`Token <jwt>` per the RealWorld spec, or `Bearer <jwt>`), which is verified with an HMAC-SHA512 key. The token subject is the user ID, which is resolved to the current `User` principal.
 
-The secret key is stored in `application.properties`.
+The signing key is read from the `JWT_SECRET` environment variable (at least 64 bytes). `application.properties` contains a public placeholder default so the app runs locally without configuration; always set `JWT_SECRET` outside local development:
+
+    export JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
 
 # Database
 
@@ -44,7 +46,7 @@ It uses a ~~H2 in-memory database~~ sqlite database (for easy local test without
 
 # Getting started
 
-You'll need Java 11 installed.
+You'll need Java 21 installed.
 
     ./gradlew bootRun
 

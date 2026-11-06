@@ -2,12 +2,12 @@ package io.spring.application.user;
 
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Valid;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import javax.validation.Constraint;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,9 +17,9 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 public class UserService {
-  private UserRepository userRepository;
-  private String defaultImage;
-  private PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final String defaultImage;
+  private final PasswordEncoder passwordEncoder;
 
   @Autowired
   public UserService(

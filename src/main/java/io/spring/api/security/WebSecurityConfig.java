@@ -2,72 +2,107 @@ package io.spring.api.security;
 
 import static java.util.Arrays.asList;
 
+import io.spring.core.user.UserRepository;
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-  @Bean
-  public JwtTokenFilter jwtTokenFilter() {
-    return new JwtTokenFilter();
-  }
+public class WebSecurityConfig {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
+  @Bean
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http, JwtDecoder jwtDecoder, UserRepository userRepository) throws Exception {
+    // CSRF protection is not needed: the API is stateless and authenticates via the
+    // Authorization header, not cookies.
+    http.csrf(AbstractHttpConfigurer::disable) // NOSONAR: stateless token auth, no cookies
+        .cors(Customizer.withDefaults())
+        .exceptionHandling(
+            exceptions ->
+                exceptions.authenticationEntryPoint(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            authorize ->
+                authorize
+                    .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD)
+                    .permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS)
+                    .permitAll()
+                    .requestMatchers("/graphiql")
+                    .permitAll()
+                    .requestMatchers("/graphql")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/articles/feed")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/users", "/users/login")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .oauth2ResourceServer(
+            oauth2 ->
+                oauth2
+                    .bearerTokenResolver(new RealWorldBearerTokenResolver())
+                    .jwt(
+                        jwt ->
+                            jwt.authenticationManager(
+                                anonymousOnInvalidToken(jwtDecoder, userRepository))));
+    return http.build();
+  }
 
-    http.csrf()
-        .disable()
-        .cors()
-        .and()
-        .exceptionHandling()
-        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-        .and()
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .authorizeRequests()
-        .antMatchers(HttpMethod.OPTIONS)
-        .permitAll()
-        .antMatchers("/graphiql")
-        .permitAll()
-        .antMatchers("/graphql")
-        .permitAll()
-        .antMatchers(HttpMethod.GET, "/articles/feed")
-        .authenticated()
-        .antMatchers(HttpMethod.POST, "/users", "/users/login")
-        .permitAll()
-        .antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags")
-        .permitAll()
-        .anyRequest()
-        .authenticated();
-
-    http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+  /**
+   * Treats an invalid, expired or unknown-user token as anonymous instead of rejecting the request,
+   * so public endpoints stay readable with a stale token and protected endpoints still return 401
+   * via the entry point.
+   */
+  static AuthenticationManager anonymousOnInvalidToken(
+      JwtDecoder jwtDecoder, UserRepository userRepository) {
+    JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtDecoder);
+    provider.setJwtAuthenticationConverter(new UserJwtAuthenticationConverter(userRepository));
+    return authentication -> {
+      try {
+        return provider.authenticate(authentication);
+      } catch (AuthenticationException e) {
+        return new AnonymousAuthenticationToken(
+            "anonymous", "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+      }
+    };
   }
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(asList("*"));
+    // Public RealWorld API: any origin, but credentials are disabled and auth is header-only.
+    configuration.setAllowedOrigins(asList("*")); // NOSONAR
     configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     // setAllowCredentials(true) is important, otherwise:
     // The value of the 'Access-Control-Allow-Origin' header in the response must not be the

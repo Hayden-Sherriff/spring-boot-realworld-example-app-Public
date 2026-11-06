@@ -7,6 +7,7 @@ import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
 import graphql.relay.DefaultConnectionCursor;
 import graphql.relay.DefaultPageInfo;
+import io.spring.Util;
 import io.spring.application.CommentQueryService;
 import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
@@ -25,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
 
 @DgsComponent
 @AllArgsConstructor
@@ -100,13 +100,11 @@ public class CommentDatafetcher {
   }
 
   private DefaultPageInfo buildCommentPageInfo(CursorPager<CommentData> comments) {
+    var startCursor = comments.getStartCursor();
+    var endCursor = comments.getEndCursor();
     return new DefaultPageInfo(
-        comments.getStartCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getStartCursor().toString()),
-        comments.getEndCursor() == null
-            ? null
-            : new DefaultConnectionCursor(comments.getEndCursor().toString()),
+        startCursor == null ? null : new DefaultConnectionCursor(startCursor.toString()),
+        endCursor == null ? null : new DefaultConnectionCursor(endCursor.toString()),
         comments.hasPrevious(),
         comments.hasNext());
   }
@@ -115,8 +113,8 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
-        .createdAt(ISODateTimeFormat.dateTime().withZoneUTC().print(comment.getCreatedAt()))
+        .updatedAt(Util.toIsoString(comment.getCreatedAt()))
+        .createdAt(Util.toIsoString(comment.getCreatedAt()))
         .build();
   }
 }

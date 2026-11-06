@@ -2,7 +2,6 @@ package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -26,18 +25,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CommentsApi.class)
 @Import({WebSecurityConfig.class, JacksonCustomizations.class})
 public class CommentsApiTest extends TestWithCurrentUser {
 
-  @MockBean private ArticleRepository articleRepository;
+  @MockitoBean private ArticleRepository articleRepository;
 
-  @MockBean private CommentRepository commentRepository;
-  @MockBean private CommentQueryService commentQueryService;
+  @MockitoBean private CommentRepository commentRepository;
+  @MockitoBean private CommentQueryService commentQueryService;
 
   private Article article;
   private CommentData commentData;
@@ -147,13 +146,12 @@ public class CommentsApiTest extends TestWithCurrentUser {
     User anotherUser = new User("other@example.com", "other", "123", "", "");
     when(userRepository.findByUsername(eq(anotherUser.getUsername())))
         .thenReturn(Optional.of(anotherUser));
-    when(jwtService.getSubFromToken(any())).thenReturn(Optional.of(anotherUser.getId()));
     when(userRepository.findById(eq(anotherUser.getId())))
         .thenReturn(Optional.ofNullable(anotherUser));
 
     when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
         .thenReturn(Optional.of(comment));
-    String token = jwtService.toToken(anotherUser);
+    String token = tokenFor(anotherUser);
     when(userRepository.findById(eq(anotherUser.getId()))).thenReturn(Optional.of(anotherUser));
     given()
         .header("Authorization", "Token " + token)
