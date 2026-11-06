@@ -1,5 +1,6 @@
 package io.spring.infrastructure.service;
 
+import io.spring.api.security.JwtConfig;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.util.Optional;
@@ -7,13 +8,19 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DefaultJwtServiceTest {
+public class SpringSecurityJwtServiceTest {
+
+  private static final String SECRET =
+      "123123123123123123123123123123123123123123123123123123123123123123123123";
 
   private JwtService jwtService;
 
   @BeforeEach
   public void setUp() {
-    jwtService = new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+    JwtConfig jwtConfig = new JwtConfig();
+    jwtService =
+        new SpringSecurityJwtService(
+            jwtConfig.jwtEncoder(SECRET), jwtConfig.jwtDecoder(SECRET), 3600);
   }
 
   @Test
@@ -37,5 +44,21 @@ public class DefaultJwtServiceTest {
     String token =
         "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhaXNlbnNpeSIsImV4cCI6MTUwMjE2MTIwNH0.SJB-U60WzxLYNomqLo4G3v3LzFxJKuVrIud8D8Lz3-mgpo9pN1i7C8ikU_jQPJGm8HsC1CquGMI-rSuM7j6LDA";
     Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
+  }
+
+  @Test
+  public void should_reject_token_signed_with_another_key() {
+    JwtConfig jwtConfig = new JwtConfig();
+    String otherSecret = SECRET.replace('1', '9');
+    JwtService other =
+        new SpringSecurityJwtService(
+            jwtConfig.jwtEncoder(otherSecret), jwtConfig.jwtDecoder(otherSecret), 3600);
+    String token = other.toToken(new User("email@email.com", "username", "123", "", ""));
+    Assertions.assertFalse(jwtService.getSubFromToken(token).isPresent());
+  }
+
+  @Test
+  public void should_reject_short_secret() {
+    Assertions.assertThrows(IllegalStateException.class, () -> new JwtConfig().jwtEncoder("short"));
   }
 }
