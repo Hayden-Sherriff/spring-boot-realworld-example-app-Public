@@ -8,13 +8,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
@@ -31,8 +37,8 @@ public class WebSecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, UserRepository userRepository)
-      throws Exception {
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http, JwtDecoder jwtDecoder, UserRepository userRepository) throws Exception {
     // CSRF protection is not needed: the API is stateless and authenticates via the
     // Authorization header, not cookies.
     http.csrf(AbstractHttpConfigurer::disable) // NOSONAR: stateless token auth, no cookies
@@ -68,9 +74,28 @@ public class WebSecurityConfig {
                     .bearerTokenResolver(new RealWorldBearerTokenResolver())
                     .jwt(
                         jwt ->
-                            jwt.jwtAuthenticationConverter(
-                                new UserJwtAuthenticationConverter(userRepository))));
+                            jwt.authenticationManager(
+                                anonymousOnInvalidToken(jwtDecoder, userRepository))));
     return http.build();
+  }
+
+  /**
+   * Treats an invalid, expired or unknown-user token as anonymous instead of rejecting the request,
+   * so public endpoints stay readable with a stale token and protected endpoints still return 401
+   * via the entry point.
+   */
+  static AuthenticationManager anonymousOnInvalidToken(
+      JwtDecoder jwtDecoder, UserRepository userRepository) {
+    JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtDecoder);
+    provider.setJwtAuthenticationConverter(new UserJwtAuthenticationConverter(userRepository));
+    return authentication -> {
+      try {
+        return provider.authenticate(authentication);
+      } catch (AuthenticationException e) {
+        return new AnonymousAuthenticationToken(
+            "anonymous", "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+      }
+    };
   }
 
   @Bean

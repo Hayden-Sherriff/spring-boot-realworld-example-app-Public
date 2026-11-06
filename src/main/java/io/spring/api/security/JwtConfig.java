@@ -4,6 +4,8 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,8 @@ public class JwtConfig {
   public static final MacAlgorithm ALGORITHM = MacAlgorithm.HS512;
 
   private static final int MIN_SECRET_BYTES = 64;
+  private static final String LOCAL_PLACEHOLDER_PREFIX = "local-dev-only-insecure-placeholder";
+  private static final Logger log = LoggerFactory.getLogger(JwtConfig.class);
 
   @Bean
   public JwtEncoder jwtEncoder(@Value("${jwt.secret}") String secret) {
@@ -34,6 +38,10 @@ public class JwtConfig {
     if (bytes.length < MIN_SECRET_BYTES) {
       throw new IllegalStateException(
           "jwt.secret must be at least " + MIN_SECRET_BYTES + " bytes for " + ALGORITHM);
+    }
+    if (secret.startsWith(LOCAL_PLACEHOLDER_PREFIX)) {
+      log.warn(
+          "jwt.secret is the public local-dev placeholder; set JWT_SECRET outside local development");
     }
     return new SecretKeySpec(bytes, "HmacSHA512");
   }
